@@ -39,7 +39,7 @@ class PageViewController: UIPageViewController {
         super.viewDidLoad()
 
         segmentedControl = UISegmentedControl(items: segmentedControlItems)
-        segmentedControl.addTarget(self, action: #selector(PageViewController.didSwitchMenu(_:)), for: UIControl.Event.valueChanged)
+        segmentedControl.addTarget(self, action: #selector(PageViewController.didSwitchMenu(_:)), for: UIControlEvents.valueChanged)
         segmentedControl.selectedSegmentIndex = index
         segmentedControl.setWidth(100, forSegmentAt: 0)
         segmentedControl.setWidth(100, forSegmentAt: 1)
@@ -47,8 +47,8 @@ class PageViewController: UIPageViewController {
 
         viewList = [viewControllerOne, viewControllerTwo]
 
-        viewControllerOne.didMove(toParent: self)
-        viewControllerTwo.didMove(toParent: self)
+        viewControllerOne.didMove(toParentViewController: self)
+        viewControllerTwo.didMove(toParentViewController: self)
 
         self.delegate = self
         self.dataSource = self
@@ -69,11 +69,13 @@ class PageViewController: UIPageViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        configureNavBar()
+        
+        /// CUSTOM!
+//        configureNavBar()
     }
 
     func configureNavBar() {
-        let navBackground = self.folioReader.isNight(self.readerConfig.nightModeMenuBackground,self.readerConfig.daysModeNavBackground)
+        let navBackground = self.folioReader.isNight(self.readerConfig.nightModeMenuBackground, UIColor.white)
         let tintColor = self.readerConfig.tintColor
         let navText = self.folioReader.isNight(UIColor.white, UIColor.black)
         let font = UIFont(name: "Avenir-Light", size: 17)!
@@ -84,7 +86,7 @@ class PageViewController: UIPageViewController {
 
     @objc func didSwitchMenu(_ sender: UISegmentedControl) {
         self.index = sender.selectedSegmentIndex
-        let direction: UIPageViewController.NavigationDirection = (index == 0 ? .reverse : .forward)
+        let direction: UIPageViewControllerNavigationDirection = (index == 0 ? .reverse : .forward)
         setViewControllers([viewList[index]], direction: direction, animated: true, completion: nil)
         self.folioReader.currentMenuIndex = index
     }

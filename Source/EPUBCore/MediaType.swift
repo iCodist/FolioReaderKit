@@ -28,7 +28,6 @@ public struct MediaType: Equatable {
 
 // MARK: - Equatable
 
-/// :nodoc:
 public func == (lhs: MediaType, rhs: MediaType) -> Bool {
     guard lhs.name == rhs.name else { return false }
     guard lhs.defaultExtension == rhs.defaultExtension else { return false }

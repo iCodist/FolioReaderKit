@@ -27,7 +27,7 @@ public enum FolioReaderScrollDirection: Int {
     /// The current scroll direction
     ///
     /// - Returns: Returns `UICollectionViewScrollDirection`
-    func collectionViewScrollDirection() -> UICollectionView.ScrollDirection {
+    func collectionViewScrollDirection() -> UICollectionViewScrollDirection {
         switch self {
         case .vertical, .defaultVertical:
             return .vertical
@@ -109,15 +109,6 @@ open class FolioReaderConfig: NSObject {
     /// Menu text color
     open var menuTextColor = UIColor(rgba: "#767676")
 
-    /// Menu text color
-    open var menuTextColorSelected = UIColor(rgba: "#6ACC50")
-    
-    // Day mode nav color
-    open var daysModeNavBackground = UIColor.white
-    
-    // Day mode nav color
-    open var nightModeNavBackground = UIColor(rgba: "#131313")
-    
     /// Night mode background color
     open var nightModeBackground = UIColor(rgba: "#131313")
 
@@ -141,9 +132,6 @@ open class FolioReaderConfig: NSObject {
     /// Enable or disable hability to user change scroll direction on menu.
     open var canChangeScrollDirection = true
 
-    /// Enable or disable hability to user change font style on menu.
-    open var canChangeFontStyle = true
-    
     /// Should hide navigation bar on user tap
     open var shouldHideNavigationOnTap = true
 
@@ -165,63 +153,90 @@ open class FolioReaderConfig: NSObject {
     // MARK: Quote image share
 
     /// Custom Quote logo
-    open var quoteCustomLogoImage = UIImage(readerImageNamed: "icon-logo")
+    open var quoteCustomLogoImage       = UIImage(readerImageNamed: "icon-logo")
 
     /// Add custom backgrounds and font colors to Quote Images
-    open var quoteCustomBackgrounds = [QuoteImage]()
+    open var quoteCustomBackgrounds     = [QuoteImage]()
 
     /// Enable or disable default Quote Image backgrounds
-    open var quotePreserveDefaultBackgrounds = true
+    open var quotePreserveDefaultBackgrounds    = true
 
     // MARK: Realm
 
     /// Realm configuration for storing highlights
-    open var realmConfiguration = Realm.Configuration(schemaVersion: 2)
+    open var realmConfiguration         = Realm.Configuration()
 
     // MARK: Localized strings
 
+    /// CUSTOM!
     /// Localizes Highlight title
-    open var localizedHighlightsTitle = NSLocalizedString("Highlights", comment: "")
+    open var localizedHighlightsTitle   = NSLocalizedString("高亮", comment: "")
 
+    /// CUSTOM!
     /// Localizes Content title
-    open var localizedContentsTitle = NSLocalizedString("Contents", comment: "")
+    open var localizedContentsTitle     = NSLocalizedString("目录", comment: "")
 
     /// Use the readers `UIMenuController` which enables the highlighting etc. The default is `true`. If set to false it's possible to modify the shared `UIMenuController` for yourself. Note: This doesn't disable the text selection in the web view.
-    open var useReaderMenuController = true
+    open var useReaderMenuController    = true
 
     /// Used to distinguish between multiple or different reader instances. The content of the user defaults (font settings etc.) depends on this identifier. The default is `nil`.
     open var identifier: String?
 
+    /// CUSTOM!
     /// Localizes Highlight date format. This is a `dateFormat` from `NSDateFormatter`, so be careful 🤔
+//    open var localizedHighlightsDateFormat = "MMM dd, YYYY | HH:mm"
+//    open var localizedHighlightMenu = NSLocalizedString("Highlight", comment: "")
+//    open var localizedDefineMenu = NSLocalizedString("Define", comment: "")
+//    open var localizedPlayMenu = NSLocalizedString("Play", comment: "")
+//    open var localizedPauseMenu = NSLocalizedString("Pause", comment: "")
+//    open var localizedFontMenuNight = NSLocalizedString("Night", comment: "")
+//    open var localizedPlayerMenuStyle = NSLocalizedString("Style", comment: "")
+//    open var localizedFontMenuDay = NSLocalizedString("Day", comment: "")
+//    open var localizedLayoutHorizontal = NSLocalizedString("Horizontal", comment: "")
+//    open var localizedLayoutVertical = NSLocalizedString("Vertical", comment: "")
+//    open var localizedReaderOnePageLeft = NSLocalizedString("1 page left", comment: "")
+//    open var localizedReaderManyPagesLeft = NSLocalizedString("pages left", comment: "")
+//    open var localizedReaderManyMinutes = NSLocalizedString("minutes", comment: "")
+//    open var localizedReaderOneMinute = NSLocalizedString("1 minute", comment: "")
+//    open var localizedReaderLessThanOneMinute = NSLocalizedString("Less than a minute", comment: "")
+//    open var localizedShareWebLink: URL? = nil
+//    open var localizedShareChapterSubject = NSLocalizedString("Check out this chapter from", comment: "")
+//    open var localizedShareHighlightSubject = NSLocalizedString("Notes from", comment: "")
+//    open var localizedShareAllExcerptsFrom = NSLocalizedString("All excerpts from", comment: "")
+//    open var localizedShareBy = NSLocalizedString("by", comment: "")
+//    open var localizedCancel = NSLocalizedString("Cancel", comment: "")
+//    open var localizedShare = NSLocalizedString("Share", comment: "")
+//    open var localizedChooseExisting = NSLocalizedString("Choose existing", comment: "")
+//    open var localizedTakePhoto = NSLocalizedString("Take Photo", comment: "")
+//    open var localizedShareImageQuote = NSLocalizedString("Share image quote", comment: "")
+//    open var localizedShareTextQuote = NSLocalizedString("Share text quote", comment: "")
     open var localizedHighlightsDateFormat = "MMM dd, YYYY | HH:mm"
-    open var localizedHighlightMenu = NSLocalizedString("Highlight", comment: "")
-    open var localizedDefineMenu = NSLocalizedString("Define", comment: "")
-    open var localizedPlayMenu = NSLocalizedString("Play", comment: "")
-    open var localizedPauseMenu = NSLocalizedString("Pause", comment: "")
-    open var localizedFontMenuNight = NSLocalizedString("Night", comment: "")
-    open var localizedPlayerMenuStyle = NSLocalizedString("Style", comment: "")
-    open var localizedFontMenuDay = NSLocalizedString("Day", comment: "")
-    open var localizedLayoutHorizontal = NSLocalizedString("Horizontal", comment: "")
-    open var localizedLayoutVertical = NSLocalizedString("Vertical", comment: "")
-    open var localizedReaderOnePageLeft = NSLocalizedString("1 page left", comment: "")
-    open var localizedReaderManyPagesLeft = NSLocalizedString("pages left", comment: "")
-    open var localizedReaderManyMinutes = NSLocalizedString("minutes", comment: "")
-    open var localizedReaderOneMinute = NSLocalizedString("1 minute", comment: "")
-    open var localizedReaderLessThanOneMinute = NSLocalizedString("Less than a minute", comment: "")
+    open var localizedHighlightMenu = NSLocalizedString("高亮", comment: "")
+    open var localizedDefineMenu = NSLocalizedString("查词典", comment: "")
+    open var localizedPlayMenu = NSLocalizedString("播放", comment: "")
+    open var localizedPauseMenu = NSLocalizedString("暂停", comment: "")
+    open var localizedFontMenuNight = NSLocalizedString("夜间", comment: "")
+    open var localizedPlayerMenuStyle = NSLocalizedString("样式", comment: "")
+    open var localizedFontMenuDay = NSLocalizedString("白天", comment: "")
+    open var localizedLayoutHorizontal = NSLocalizedString("水平", comment: "")
+    open var localizedLayoutVertical = NSLocalizedString("竖直", comment: "")
+    open var localizedReaderOnePageLeft = NSLocalizedString("1 页未读", comment: "")
+    open var localizedReaderManyPagesLeft = NSLocalizedString("页未读", comment: "")
+    open var localizedReaderManyMinutes = NSLocalizedString("分钟", comment: "")
+    open var localizedReaderOneMinute = NSLocalizedString("1 分钟", comment: "")
+    open var localizedReaderLessThanOneMinute = NSLocalizedString("少于 1 分钟", comment: "")
     open var localizedShareWebLink: URL? = nil
-    open var localizedShareChapterSubject = NSLocalizedString("Check out this chapter from", comment: "")
-    open var localizedShareHighlightSubject = NSLocalizedString("Notes from", comment: "")
-    open var localizedShareAllExcerptsFrom = NSLocalizedString("All excerpts from", comment: "")
-    open var localizedShareBy = NSLocalizedString("by", comment: "")
-    open var localizedCancel = NSLocalizedString("Cancel", comment: "")
-    open var localizedShare = NSLocalizedString("Share", comment: "")
-    open var localizedChooseExisting = NSLocalizedString("Choose existing", comment: "")
-    open var localizedTakePhoto = NSLocalizedString("Take Photo", comment: "")
-    open var localizedShareImageQuote = NSLocalizedString("Share image quote", comment: "")
-    open var localizedShareTextQuote = NSLocalizedString("Share text quote", comment: "")
-    open var localizedSave = NSLocalizedString("Save", comment: "")
-    open var localizedHighlightNote = NSLocalizedString("Note", comment: "")
-
+    open var localizedShareChapterSubject = NSLocalizedString("请参阅本章", comment: "")
+    open var localizedShareHighlightSubject = NSLocalizedString("注自", comment: "")
+    open var localizedShareAllExcerptsFrom = NSLocalizedString("所有摘录自", comment: "")
+    open var localizedShareBy = NSLocalizedString("通过", comment: "")
+    open var localizedCancel = NSLocalizedString("取消", comment: "")
+    open var localizedShare = NSLocalizedString("分享", comment: "")
+    open var localizedChooseExisting = NSLocalizedString("选择现有", comment: "")
+    open var localizedTakePhoto = NSLocalizedString("拍照", comment: "")
+    open var localizedShareImageQuote = NSLocalizedString("分享图片文摘", comment: "")
+    open var localizedShareTextQuote = NSLocalizedString("分享文字文摘", comment: "")
+    
     public convenience init(withIdentifier identifier: String) {
         self.init()
 

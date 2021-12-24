@@ -53,9 +53,9 @@ class FolioReaderQuoteShare: UIViewController {
         self.setCloseButton(withConfiguration: self.readerConfig)
         configureNavBar()
 
-        let titleAttrs = [NSAttributedString.Key.foregroundColor: self.readerConfig.tintColor]
+        let titleAttrs = [NSAttributedStringKey.foregroundColor: self.readerConfig.tintColor]
         let share = UIBarButtonItem(title: self.readerConfig.localizedShare, style: .plain, target: self, action: #selector(shareQuote(_:)))
-        share.setTitleTextAttributes(titleAttrs, for: UIControl.State())
+        share.setTitleTextAttributes(titleAttrs, for: UIControlState())
         navigationItem.rightBarButtonItem = share
 
         let isPad = (UIDevice.current.userInterfaceIdiom == .pad)
@@ -108,10 +108,10 @@ class FolioReaderQuoteShare: UIViewController {
         filterImage.addSubview(titleLabel)
 
         // Attributed author
-        let attrs = [NSAttributedString.Key.font: UIFont(name: "Lato-Italic", size: 15)!]
+        let attrs = [NSAttributedStringKey.font: UIFont(name: "Lato-Italic", size: 15)!]
         let attributedString = NSMutableAttributedString(string:"\(self.readerConfig.localizedShareBy) ", attributes: attrs)
 
-        let attrs1 = [NSAttributedString.Key.font: UIFont(name: "Lato-Regular", size: 15)!]
+        let attrs1 = [NSAttributedStringKey.font: UIFont(name: "Lato-Regular", size: 15)!]
         let boldString = NSMutableAttributedString(string: authorName, attributes:attrs1)
         attributedString.append(boldString)
 
@@ -168,7 +168,7 @@ class FolioReaderQuoteShare: UIViewController {
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.backgroundColor = background
-        collectionView.decelerationRate = UIScrollView.DecelerationRate.fast
+        collectionView.decelerationRate = UIScrollViewDecelerationRateFast
         view.addSubview(collectionView)
 
         if (UIDevice.current.userInterfaceIdiom == .phone) {
@@ -191,12 +191,13 @@ class FolioReaderQuoteShare: UIViewController {
         selectIndex(0)
     }
 
+    /// CUSTOM!
     func configureNavBar() {
-        let navBackground = self.folioReader.isNight(self.readerConfig.nightModeNavBackground, self.readerConfig.daysModeNavBackground)
-        let tintColor = self.readerConfig.tintColor
-        let navText = self.folioReader.isNight(UIColor.white, UIColor.black)
-        let font = UIFont(name: "Avenir-Light", size: 17)!
-        setTranslucentNavigation(false, color: navBackground, tintColor: tintColor, titleColor: navText, andFont: font)
+//        let navBackground = self.folioReader.isNight(self.readerConfig.nightModeMenuBackground, UIColor.white)
+//        let tintColor = self.readerConfig.tintColor
+//        let navText = self.folioReader.isNight(UIColor.white, UIColor.black)
+//        let font = UIFont(name: "Avenir-Light", size: 17)!
+//        setTranslucentNavigation(false, color: navBackground, tintColor: tintColor, titleColor: navText, andFont: font)
     }
 
     func createDefaultImages() {
@@ -285,7 +286,7 @@ class FolioReaderQuoteShare: UIViewController {
         shareItems.insert(act, at: 0)
 
         let activityViewController = UIActivityViewController(activityItems: shareItems, applicationActivities: nil)
-        activityViewController.excludedActivityTypes = [UIActivity.ActivityType.print, UIActivity.ActivityType.postToVimeo]
+        activityViewController.excludedActivityTypes = [UIActivityType.print, UIActivityType.postToVimeo]
 
         // Pop style on iPad
         if let actv = activityViewController.popoverPresentationController {
@@ -408,11 +409,8 @@ extension FolioReaderQuoteShare: UICollectionViewDelegate {
 // MARK: ImagePicker delegate
 
 extension FolioReaderQuoteShare: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-// Local variable inserted by Swift 4.2 migrator.
-let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
-
-        if let image = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.editedImage)] as? UIImage {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        if let image = info[UIImagePickerControllerEditedImage] as? UIImage {
 
             let quoteImage = QuoteImage(withImage: image, alpha: 0.6, backgroundColor: UIColor.black)
 
@@ -427,14 +425,4 @@ let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
         
         self.dismiss(animated: true, completion: nil)
     }
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
-	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
-}
-
-// Helper function inserted by Swift 4.2 migrator.
-fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
-	return input.rawValue
 }

@@ -21,7 +21,6 @@ open class Highlight: Object {
     @objc open dynamic var type: Int = 0
     @objc open dynamic var startOffset: Int = -1
     @objc open dynamic var endOffset: Int = -1
-    @objc open dynamic var noteForHighlight: String?
 
     override open class func primaryKey()-> String {
         return "highlightId"
@@ -30,6 +29,6 @@ open class Highlight: Object {
 
 extension Results {
     func toArray<T>(_ ofType: T.Type) -> [T] {
-        return compactMap { $0 as? T }
+        return flatMap { $0 as? T }
     }
 }

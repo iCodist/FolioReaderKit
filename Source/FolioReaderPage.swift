@@ -9,6 +9,7 @@
 import UIKit
 import SafariServices
 import MenuItemKit
+import JSQWebViewController
 
 /// Protocol which is used from `FolioReaderPage`s.
 @objc public protocol FolioReaderPageDelegate: class {
@@ -127,7 +128,7 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         }
 
         let statusbarHeight = UIApplication.shared.statusBarFrame.size.height
-        let navBarHeight = self.folioReader.readerCenter?.navigationController?.navigationBar.frame.size.height ?? CGFloat(0)
+        let navBarHeight = readerContainer?.navigationController?.navigationBar.frame.size.height ?? CGFloat(0)
         let navTotal = self.readerConfig.shouldHideNavigationOnTap ? 0 : statusbarHeight + navBarHeight
         let paddingTop: CGFloat = 20
         let paddingBottom: CGFloat = 30
@@ -162,20 +163,12 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         if (highlights.count > 0) {
             for item in highlights {
                 let style = HighlightStyle.classForStyle(item.type)
-                
-                var tag = ""
-                if let _ = item.noteForHighlight {
-                    tag = "<highlight id=\"\(item.highlightId!)\" onclick=\"callHighlightWithNoteURL(this);\" class=\"\(style)\">\(item.content!)</highlight>"
-                } else {
-                    tag = "<highlight id=\"\(item.highlightId!)\" onclick=\"callHighlightURL(this);\" class=\"\(style)\">\(item.content!)</highlight>"
-                }
-                
+                let tag = "<highlight id=\"\(item.highlightId!)\" onclick=\"callHighlightURL(this);\" class=\"\(style)\">\(item.content!)</highlight>"
                 var locator = item.contentPre + item.content
                 locator += item.contentPost
                 locator = Highlight.removeSentenceSpam(locator) /// Fix for Highlights
-                
                 let range: NSRange = tempHtmlContent.range(of: locator, options: .literal)
-                
+
                 if range.location != NSNotFound {
                     let newRange = NSRange(location: range.location + item.contentPre.count, length: item.content.count)
                     tempHtmlContent = tempHtmlContent.replacingCharacters(in: newRange, with: tag) as NSString
@@ -225,7 +218,7 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         delegate?.pageDidLoad?(self)
     }
 
-    open func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebView.NavigationType) -> Bool {
+    open func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
         guard
             let webView = webView as? FolioReaderWebView,
             let scheme = request.url?.scheme else {
@@ -234,12 +227,13 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
 
         guard let url = request.url else { return false }
 
-        if scheme == "highlight" || scheme == "highlight-with-note" {
+        if scheme == "highlight" {
+
             shouldShowBar = false
 
             guard let decoded = url.absoluteString.removingPercentEncoding else { return false }
             let index = decoded.index(decoded.startIndex, offsetBy: 12)
-            let rect = NSCoder.cgRect(for: String(decoded[index...]))
+            let rect = CGRectFromString(String(decoded[index...]))
 
             webView.createMenu(options: true)
             webView.setMenuVisible(true, andRect: rect)
@@ -300,9 +294,17 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
             print("Email")
             return true
         } else if url.absoluteString != "about:blank" && scheme.contains("http") && navigationType == .linkClicked {
-            let safariVC = SFSafariViewController(url: request.url!)
-            safariVC.view.tintColor = self.readerConfig.tintColor
-            self.folioReader.readerCenter?.present(safariVC, animated: true, completion: nil)
+
+            if #available(iOS 9.0, *) {
+                let safariVC = SFSafariViewController(url: request.url!)
+                safariVC.view.tintColor = self.readerConfig.tintColor
+                self.folioReader.readerCenter?.present(safariVC, animated: true, completion: nil)
+            } else {
+                let webViewController = WebViewController(url: request.url!)
+                let nav = UINavigationController(rootViewController: webViewController)
+                nav.view.tintColor = self.readerConfig.tintColor
+                self.folioReader.readerCenter?.present(nav, animated: true, completion: nil)
+            }
             return false
         } else {
             // Check if the url is a custom class based onClick listerner
@@ -372,7 +374,7 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
     @objc open func handleTapGesture(_ recognizer: UITapGestureRecognizer) {
         self.delegate?.pageTap?(recognizer)
         
-        if let _navigationController = self.folioReader.readerCenter?.navigationController, (_navigationController.isNavigationBarHidden == true) {
+        if let _navigationController = readerContainer?.navigationController, (_navigationController.isNavigationBarHidden == true) {
             let selected = webView?.js("getSelectedText()")
             
             guard (selected == nil || selected?.isEmpty == true) else {
@@ -382,8 +384,9 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
             let delay = 0.4 * Double(NSEC_PER_SEC) // 0.4 seconds * nanoseconds per seconds
             let dispatchTime = (DispatchTime.now() + (Double(Int64(delay)) / Double(NSEC_PER_SEC)))
             
+            /// CUSTOM!
             DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: {
-                if (self.shouldShowBar == true && self.menuIsVisible == false) {
+                if (self.shouldShowBar == true && self.menuIsVisible == false && self.webView?.scrollView.isDecelerating == false) {
                     self.folioReader.readerCenter?.toggleBars()
                 }
             })
@@ -465,6 +468,21 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
         }
 
         return CGFloat(0)
+    }
+    
+    /// Get reading position offset
+    ///
+    /// - Parameters:
+    ///   - usingId: will remove this....
+    ///   - value: The position of <p> tag
+    /// - Returns: Offset position to scroll to
+    func getReadingPositionOffset(usingId: Bool, value: Int) -> CGFloat? {
+        let horizontal = readerConfig.scrollDirection == .horizontal
+        
+        guard let strOffset = webView?.js("getReadingPositionOffset(\(usingId.description), \(value), \(horizontal.description))"), let number = NumberFormatter().number(from: strOffset) else {
+            return nil
+        }
+        return CGFloat(number)
     }
 
     // MARK: Mark ID

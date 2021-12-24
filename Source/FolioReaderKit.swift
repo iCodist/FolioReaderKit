@@ -95,7 +95,12 @@ public enum MediaOverlayStyle: Int {
 /// Main Library class with some useful constants and methods
 open class FolioReader: NSObject {
 
-    public override init() { }
+    public override init() {
+        super.init()
+        
+        /// CUSTOM!
+        addObservers()
+    }
 
     deinit {
         removeObservers()
@@ -136,14 +141,14 @@ open class FolioReader: NSObject {
     // Add necessary observers
     fileprivate func addObservers() {
         removeObservers()
-        NotificationCenter.default.addObserver(self, selector: #selector(saveReaderState), name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(saveReaderState), name: UIApplication.willTerminateNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(saveReaderState), name: .UIApplicationWillResignActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(saveReaderState), name: .UIApplicationWillTerminate, object: nil)
     }
 
     /// Remove necessary observers
     fileprivate func removeObservers() {
-        NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIApplication.willTerminateNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .UIApplicationWillResignActive, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .UIApplicationWillTerminate, object: nil)
     }
 }
 
@@ -165,7 +170,8 @@ extension FolioReader {
         let readerContainer = FolioReaderContainer(withConfig: config, folioReader: self, epubPath: epubPath, unzipPath: unzipPath, removeEpub: shouldRemoveEpub)
         self.readerContainer = readerContainer
         parentViewController.present(readerContainer, animated: animated, completion: nil)
-        addObservers()
+        /// CUSTOM!
+//        addObservers()
     }
 }
 
@@ -290,19 +296,30 @@ extension FolioReader {
         }
     }
 
-    open var savedPositionForCurrentBook: [String: Any]? {
-        get {
-            guard let bookId = self.readerContainer?.book.name else {
-                return nil
-            }
-            return self.defaults.value(forKey: bookId) as? [String : Any]
+    @objc open var savedPositionForCurrentBook: [String: Any]? {
+        /// CUSTOM!
+//        get {
+//            guard let bookId = self.readerContainer?.book.name else {
+//                return nil
+//            }
+//            return self.defaults.value(forKey: bookId) as? [String : Any]
+//        }
+//        set {
+//            guard let bookId = self.readerContainer?.book.name else {
+//                return
+//            }
+//            self.defaults.set(newValue, forKey: bookId)
+//        }
+        
+        guard let bookmarkManager = (self.readerContainer as? EpubViewer)?.bookmarkManager, let bookmarkOfPageLastReading = bookmarkManager.bookmarkOfPageLastReading else {
+            return nil
         }
-        set {
-            guard let bookId = self.readerContainer?.book.name else {
-                return
-            }
-            self.defaults.set(newValue, forKey: bookId)
-        }
+
+        let position = [
+            "pageNumber": bookmarkOfPageLastReading.pageNumber,
+            "readingProgress": bookmarkOfPageLastReading.readingProgress
+            ] as [String : Any]
+        return position
     }
 }
 
@@ -339,17 +356,53 @@ extension FolioReader {
             return
         }
 
-        guard let currentPage = self.readerCenter?.currentPage, let webView = currentPage.webView else {
+        /// CUSTOM!
+//        guard let currentPage = self.readerCenter?.currentPage, let webView = currentPage.webView else {
+//            return
+//        }
+//
+//        let position = [
+//            "pageNumber": (self.readerCenter?.currentPageNumber ?? 0),
+//            "pageOffsetX": webView.scrollView.contentOffset.x,
+//            "pageOffsetY": webView.scrollView.contentOffset.y
+//            ] as [String : Any]
+//
+//        self.savedPositionForCurrentBook = position
+        
+        guard let currentPage = self.readerCenter?.currentPage, let epubViewer = readerContainer as? EpubViewer else {
             return
         }
 
-        let position = [
-            "pageNumber": (self.readerCenter?.currentPageNumber ?? 0),
-            "pageOffsetX": webView.scrollView.contentOffset.x,
-            "pageOffsetY": webView.scrollView.contentOffset.y
-            ] as [String : Any]
-
-        self.savedPositionForCurrentBook = position
+        let pageNumber = self.readerCenter?.currentPageNumber ?? 0
+        let readingProgress = currentPage.readingProgress
+        epubViewer.bookmarkManager.setBookmarkOfPageLastReading(withPageNumber: pageNumber, readingProgress: Float(readingProgress))
+        
+        
+//        guard let epubViewer = readerContainer as? EpubViewer else {
+//            return
+//        }
+//
+//        guard let chapterHref = self.readerCenter?.getCurrentChapter()?.href else {
+//            return
+//        }
+//
+//        guard let currentPosition = self.readerCenter?.currentPage?.webView?.js("getLineId(\(self.readerContainer?.readerConfig.scrollDirection == .horizontal))") else {
+//            return
+//        }
+//
+//        let jsonData = currentPosition.data(using: String.Encoding.utf8)
+//
+//        do {
+//            if let data = jsonData {
+//                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+//                if let j = json, let value = j["value"], let usingId = j["usingId"] {
+//                    epubViewer.bookmarkManager.setBookmarkOfPageLastReading(withChapterHref: chapterHref, value: value, usingId: usingId)
+//                }
+//            }
+//        } catch _ {
+//            print("Doesn't save the current position")
+//        }
+ 
     }
 
     /// Closes and save the reader current instance.

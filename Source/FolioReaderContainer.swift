@@ -25,9 +25,9 @@ open class FolioReaderContainer: UIViewController {
     
     public var readerConfig: FolioReaderConfig
     public var folioReader: FolioReader
-
+    
     fileprivate var errorOnLoad = false
-
+    
     // MARK: - Init
 
     /// Init a Folio Reader Container
@@ -131,6 +131,16 @@ open class FolioReaderContainer: UIViewController {
 
         self.centerViewController = FolioReaderCenter(withContainer: self)
 
+        if let centerViewController = self.centerViewController {
+            self.view.addSubview(centerViewController.view)
+            self.addChildViewController(centerViewController)
+        }
+        self.centerViewController?.didMove(toParentViewController: self)
+        
+        /// CUSTOM!
+        self.centerViewController?.configureNavBarButtons()
+        
+        /*
         if let rootViewController = self.centerViewController {
             self.centerNavigationController = UINavigationController(rootViewController: rootViewController)
         }
@@ -138,10 +148,10 @@ open class FolioReaderContainer: UIViewController {
         self.centerNavigationController?.setNavigationBarHidden(self.readerConfig.shouldHideNavigationOnTap, animated: false)
         if let _centerNavigationController = self.centerNavigationController {
             self.view.addSubview(_centerNavigationController.view)
-            self.addChild(_centerNavigationController)
+            self.addChildViewController(_centerNavigationController)
         }
-        self.centerNavigationController?.didMove(toParent: self)
-
+        self.centerNavigationController?.didMove(toParentViewController: self)
+         */
         if (self.readerConfig.hideBars == true) {
             self.readerConfig.shouldHideNavigationOnTap = false
             self.navigationController?.navigationBar.isHidden = true
@@ -178,15 +188,15 @@ open class FolioReaderContainer: UIViewController {
             }
         }
     }
-
+    
     override open func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
+        
         if (self.errorOnLoad == true) {
             self.dismiss()
         }
     }
-
+    
     /**
      Initialize the media player
      */
@@ -202,7 +212,7 @@ open class FolioReaderContainer: UIViewController {
     }
 
     override open var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
-        return UIStatusBarAnimation.slide
+        return UIStatusBarAnimation.fade
     }
 
     override open var preferredStatusBarStyle: UIStatusBarStyle {
@@ -215,9 +225,9 @@ extension FolioReaderContainer {
         let alertController = UIAlertController(
             title: "Error",
             message: message,
-            preferredStyle: UIAlertController.Style.alert
+            preferredStyle: UIAlertControllerStyle.alert
         )
-        let action = UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel) { [weak self]
+        let action = UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel) { [weak self]
             (result : UIAlertAction) -> Void in
             self?.dismiss()
         }
