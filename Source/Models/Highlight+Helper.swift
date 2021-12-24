@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Folio Reader. All rights reserved.
 //
 
-import UIKit
+import Foundation
 import RealmSwift
 
 /**
@@ -29,12 +29,12 @@ public enum HighlightStyle: Int {
      */
     public static func styleForClass(_ className: String) -> HighlightStyle {
         switch className {
-        case "highlight-yellow": return .yellow
-        case "highlight-green": return .green
-        case "highlight-blue": return .blue
-        case "highlight-pink": return .pink
+        case "highlight-yellow":    return .yellow
+        case "highlight-green":     return .green
+        case "highlight-blue":      return .blue
+        case "highlight-pink":      return .pink
         case "highlight-underline": return .underline
-        default: return .yellow
+        default:                    return .yellow
         }
     }
 
@@ -45,11 +45,11 @@ public enum HighlightStyle: Int {
 
         let enumStyle = (HighlightStyle(rawValue: style) ?? HighlightStyle())
         switch enumStyle {
-        case .yellow: return "highlight-yellow"
-        case .green: return "highlight-green"
-        case .blue: return "highlight-blue"
-        case .pink: return "highlight-pink"
-        case .underline: return "highlight-underline"
+        case .yellow:       return "highlight-yellow"
+        case .green:        return "highlight-green"
+        case .blue:         return "highlight-blue"
+        case .pink:         return "highlight-pink"
+        case .underline:    return "highlight-underline"
         }
     }
 
@@ -58,11 +58,11 @@ public enum HighlightStyle: Int {
     /// - Returns: Tuple of all color compnonents.
     private func colorComponents() -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
         switch self {
-        case .yellow: return (red: 255, green: 235, blue: 107, alpha: 0.9)
-        case .green: return (red: 192, green: 237, blue: 114, alpha: 0.9)
-        case .blue: return (red: 173, green: 216, blue: 255, alpha: 0.9)
-        case .pink: return (red: 255, green: 176, blue: 202, alpha: 0.9)
-        case .underline: return (red: 240, green: 40, blue: 20, alpha: 0.6)
+        case .yellow:       return (red: 255, green: 235, blue: 107, alpha: 0.9)
+        case .green:        return (red: 192, green: 237, blue: 114, alpha: 0.9)
+        case .blue:         return (red: 173, green: 216, blue: 255, alpha: 0.9)
+        case .pink:         return (red: 255, green: 176, blue: 202, alpha: 0.9)
+        case .underline:    return (red: 240, green: 40, blue: 20, alpha: 0.6)
         }
     }
 
@@ -76,7 +76,7 @@ public enum HighlightStyle: Int {
     }
 }
 
-/// :nodoc:
+/// Completion block
 public typealias Completion = (_ error: NSError?) -> ()
 
 extension Highlight {
@@ -90,7 +90,7 @@ extension Highlight {
         do {
             let realm = try Realm(configuration: readerConfig.realmConfiguration)
             realm.beginWrite()
-            realm.add(self, update: true)
+            realm.add(self, update: Realm.UpdatePolicy.all)
             try realm.commitWrite()
             completion?(nil)
         } catch let error as NSError {
@@ -132,28 +132,6 @@ extension Highlight {
         } catch let error as NSError {
             print("Error on remove highlight by id: \(error)")
         }
-    }
-    
-    /// Return a Highlight by ID
-    ///
-    /// - Parameter:
-    ///   - readerConfig: Current folio reader configuration.
-    ///   - highlightId: The ID to be removed
-    ///   - page: Page number
-    /// - Returns: Return a Highlight
-    public static func getById(withConfiguration readerConfig: FolioReaderConfig, highlightId: String) -> Highlight? {
-        var highlight: Highlight?
-        let predicate = NSPredicate(format:"highlightId = %@", highlightId)
-
-        do {
-            let realm = try Realm(configuration: readerConfig.realmConfiguration)
-            highlight = realm.objects(Highlight.self).filter(predicate).toArray(Highlight.self).first
-            return highlight
-        } catch let error as NSError {
-            print("Error getting Highlight : \(error)")
-        }
-
-        return highlight
     }
 
     /// Update a Highlight by ID

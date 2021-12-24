@@ -103,32 +103,6 @@ function highlightString(style) {
     return JSON.stringify(params);
 }
 
-function highlightStringWithNote(style) {
-    var range = window.getSelection().getRangeAt(0);
-    var startOffset = range.startOffset;
-    var endOffset = range.endOffset;
-    var selectionContents = range.extractContents();
-    var elm = document.createElement("highlight");
-    var id = guid();
-    
-    elm.appendChild(selectionContents);
-    elm.setAttribute("id", id);
-    elm.setAttribute("onclick","callHighlightWithNoteURL(this);");
-    elm.setAttribute("class", style);
-    
-    range.insertNode(elm);
-    thisHighlight = elm;
-    
-    var params = [];
-    params.push({id: id, rect: getRectForSelectedText(elm), startOffset: startOffset.toString(), endOffset: endOffset.toString()});
-    
-    return JSON.stringify(params);
-}
-
-function getHighlightId() {
-    return thisHighlight.id;
-}
-
 // Menu colors
 function setHighlightStyle(style) {
     thisHighlight.className = style;
@@ -179,17 +153,6 @@ var callHighlightURL = function(elm) {
     window.location = URLBase + encodeURIComponent(currentHighlightRect);
 }
 
-// Method that call that a hightlight with note was clicked
-// with URL scheme and rect informations
-var callHighlightWithNoteURL = function(elm) {
-    event.stopPropagation();
-    var URLBase = "highlight-with-note://";
-    var currentHighlightRect = getRectForSelectedText(elm);
-    thisHighlight = elm;
-    
-    window.location = URLBase + encodeURIComponent(currentHighlightRect);
-}
-
 // Reading time
 function getReadingTime() {
     var text = document.body.innerText;
@@ -199,6 +162,14 @@ function getReadingTime() {
     var readingTimeMinutes = Math.round(totalReadingTimeSeconds / 60);
 
     return readingTimeMinutes;
+}
+
+// Get Element offset in the page
+var getElementOffset = function(target, horizontal) {
+    if (horizontal) {
+        return document.body.clientWidth * Math.floor(target.offsetTop / window.innerHeight);
+    }
+    return target.offsetTop;
 }
 
 /**
@@ -211,11 +182,7 @@ var getAnchorOffset = function(target, horizontal) {
         elem = document.getElementsByName(target)[0];
     }
     
-    if (horizontal) {
-        return document.body.clientWidth * Math.floor(elem.offsetTop / window.innerHeight);
-    }
-    
-    return elem.offsetTop;
+    return getElementOffset(elem, horizontal);
 }
 
 function findElementWithID(node) {
@@ -652,3 +619,52 @@ var onClassBasedListenerClick = function(schemeName, attributeContent) {
 	// Set the custom link URL to the event
 	window.location = schemeName + "://" + attributeContent + positionParameterString;
 }
+
+//Get Read Position Implementation 
+function isAfter(el, isHorizontal) {
+    var rect = el.getBoundingClientRect();
+    
+    var isAfter;
+    if(isHorizontal)
+        isAfter = rect.left > 0;
+    else
+        isAfter = rect.top > 0;
+    
+    return isAfter;
+}
+
+function getLineId(isHorizontal){
+    var lines = document.body.getElementsByTagName("p");
+    var visibleSpanId = 0;
+    var visibleLine;
+    
+    //var orientation = isHorizontal === "true" ? true:false
+    //var orientation = isHorizontal.length === 4 ? true:false
+    
+    //console.log(isHorizontal === true)
+    
+    for (var i = 0, max = lines.length; i < max; i++) {
+        if (isAfter(lines[i], isHorizontal)) {
+            visibleSpanId = i;
+            visibleLine = lines[i];
+            break;
+        }
+    }
+    var usingId = visibleLine.id != 'undefined' && visibleLine.id != "";
+    
+    return JSON.stringify({
+                          usingId: usingId,
+                          value: usingId ? visibleLine.id : visibleSpanId
+                          });
+}
+
+function getReadingPositionOffset(usingId, value, isHorizontal) {
+    var elm;
+    if (usingId) {
+        elm = document.getElementById(value);
+    } else {
+        elm = document.getElementsByTagName("p")[value];
+    }
+    return getElementOffset(elm, isHorizontal);
+}
+
